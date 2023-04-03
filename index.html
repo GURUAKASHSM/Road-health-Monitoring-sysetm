@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Capture and Process Image</title>
+  <script type="text/javascript">
+    // Get access to the camera and capture an image
+    function captureImage() {
+      var video = document.getElementById('video');
+      var canvas = document.getElementById('canvas');
+      var context = canvas.getContext('2d');
+      context.drawImage(video, 0, 0, 640, 480);
+      var imageData = canvas.toDataURL('image/png');
+      
+      // Send the image data to the server-side script
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', 'process_image.py', true);
+      xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState == 4 && xhr.status == 200) {
+          // Display the output of the server-side script
+          document.getElementById('output').innerHTML = xhr.responseText;
+        }
+      };
+      xhr.send('imageData=' + encodeURIComponent(imageData));
+    }
+  </script>
+</head>
+<body>
+  <h1>Capture and Process Image</h1>
+  <video id="video" width="640" height="480" autoplay></video>
+  <br>
+  <button onclick="captureImage()">Capture Image</button>
+  <br>
+  <canvas id="canvas" style="display:none;"></canvas>
+  <div id="output"></div>
+  <script type="text/javascript">
+    // Set up the camera
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(function(stream) {
+        var video = document.getElementById('video');
+        video.srcObject = stream;
+        video.onloadedmetadata = function(e) {
+          video.play();
+        };
+      })
+      .catch(function(err) {
+        console.log('Error: ' + err);
+      });
+  </script>
+</body>
+</html>
